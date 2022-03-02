@@ -1,16 +1,6 @@
 ## Operator Pattern
 
-### Operator是什么
-
-
-
-### Operator是如何工作的
-
-
-
 ### Operator开发机制
-
-
 
 #### `List&Watch`机制
 
@@ -129,15 +119,67 @@ Transfer-Encoding: chunked
 
 ![overall-informer](https://octetz.s3.us-east-2.amazonaws.com/k8s-controllers-vs-operators/client-go-flow.png)
 
-### Operator开发框架
+### Operator开发工具与框架
 
-#### Client-go
+#### Client-go（other kubernetes clients）
+
+​	使用`kubernetes client`去开发operator是自由度最大的方式，最常见的`client-go`，其他语言比如java、js/ts、python都有自己语言的client。这些client提供了较为底层的`k8s APIs`访问，封装有限。
+
+>Pros: 
+>
+>- 开发上对资源控制的自由度比较大
+>
+>Cons:
+>
+>- 不同语言的clients实现的特性有所不同，例如`client-go`最为成熟，而其他语言的成熟度相对较低，可能需要开发者去解决一些已知的问题。
+>- 需要开发者去对`k8s api`、informer机制、调谐实现机制、code generator有比较深入的理解。
+>
+>举例：
+>
+>- [kube-controller-manager](https://github.com/kubernetes/kubernetes/tree/master/pkg/controller)
+>- [tidb operator](https://github.com/pingcap/tidb-operator)
 
 #### KubeBuilder
 
+![kubebuilder](https://ssup2.github.io/images/programming/Kubernetes_Kubebuilder/Controller_Manager_Architecture.PNG)
+
+​	`KubeBuilder`是开发Operator的一个框架，开发者可以通过`CRD`的文件声明，由框架自动生成资源的结构体和`API Client`。它由`golang`实现，利用[controller-runtime](https://github.com/kubernetes-sigs/controller-runtime)库作为基础构建controller。
+
+​	当开发者使用这个框架开发controller，只需要声明`CRD`定义，且关注`Reconcile`函数的实现即可，通过监听特定的CR和其他资源触发相应的业务逻辑。
+
+>Pros:
+>
+>- 框架提供了controller搭建的脚手架（资源定义、代码生成等）。
+>- 框架提供了测试包，可以让用户与单机etcd和apiserver进行简单测试。
+>- 框架提供makefile进行operator任务(build, test, run, code generation etc.)
+>- ......
+>
+>Cons:
+>
+>- ......
+
 #### OperatorSDK
 
+![sdk](https://sdk.operatorframework.io/operator-capability-level.png)
+
+​	和`kubeBuilder`一样使用了`controller-runtime`和`controller-tools，提供了更多controller脚手架和更高层次的框架封装。
+
+>Pros:
+>
+>- 可以和helm或者ansible集成，开发者甚至可以不需要了解`golang`。
+>- 集成了Operator LifeCycle Manager(OLM)，用于管理operator的在线升级等。构建`Day2 Operator`的基础。
+>- 集成了e2e的测试框架，可以和真实的集群进行测试。
+>- [Operator Best Practices](https://sdk.operatorframework.io/docs/best-practices/best-practices/)
+>
+>Cons:
+>
+>- ......
+
 #### KUDO
+
+![kudo](https://assets.d2iq.com/production/uploads/posts/attachments/screen-shot-2019-09-24-at-23211-pm-5d8a8b7235867.png)
+
+​	Kubernetes Universal Declarative Operator (KUDO) 框架让开发者能用声明式的方式去构造operator，甚至不需要写go代码。此外，框架管理了operator的生命周期、运维等`DevOps`特性。
 
 ### `CloudSOP`平台应用场景举例
 
